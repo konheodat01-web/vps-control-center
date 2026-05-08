@@ -42,19 +42,27 @@ function installPWA() {
 }
 
 // ============ INIT ============
+let dashInterval = null;
+
 document.addEventListener('DOMContentLoaded', () => {
     loadSettings();
     updateClock();
     setInterval(updateClock, 1000);
-    // Register Service Worker
+    // Register Service Worker cho PWA
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
+    // Tu dong ket noi neu co settings cu
     if (CONFIG.ip && CONFIG.token) {
-        loadDashboardStats();
-        setInterval(loadDashboardStats, 15000);
+        startDashboardPolling();
     }
 });
+
+function startDashboardPolling() {
+    if (dashInterval) clearInterval(dashInterval);
+    loadDashboardStats();
+    dashInterval = setInterval(loadDashboardStats, 15000);
+}
 
 function updateClock() {
     const now = new Date();
@@ -63,36 +71,50 @@ function updateClock() {
 
 // ============ SETTINGS ============
 function loadSettings() {
-    const saved = localStorage.getItem('vps_config');
-    if (saved) {
-        CONFIG = { ...CONFIG, ...JSON.parse(saved) };
-        updateConnectionDisplay();
+    try {
+        const saved = localStorage.getItem('vps_config');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            CONFIG.ip = parsed.ip || '';
+            CONFIG.port = parsed.port || 4000;
+            CONFIG.token = parsed.token || '';
+        }
+    } catch(e) {
+        console.warn('Loi doc settings:', e);
     }
+    updateConnectionDisplay();
 }
 
 function saveSettings() {
-    CONFIG.ip = document.getElementById('settingsIp').value.trim();
-    CONFIG.port = parseInt(document.getElementById('settingsPort').value) || 4000;
-    CONFIG.token = document.getElementById('settingsToken').value.trim();
+    const ip = document.getElementById('settingsIp').value.trim();
+    const port = parseInt(document.getElementById('settingsPort').value) || 4000;
+    const token = document.getElementById('settingsToken').value.trim();
 
-    if (!CONFIG.ip || !CONFIG.token) {
+    if (!ip || !token) {
         showToast('Vui lòng điền đầy đủ thông tin!', 'error');
         return;
     }
 
-    localStorage.setItem('vps_config', JSON.stringify(CONFIG));
+    CONFIG.ip = ip;
+    CONFIG.port = port;
+    CONFIG.token = token;
+
+    // Luu vao localStorage
+    localStorage.setItem('vps_config', JSON.stringify({ ip, port, token }));
     updateConnectionDisplay();
     closeSettingsBtn();
-    showToast('✅ Đã lưu cài đặt thành công!', 'success');
-    // Load data ngay sau khi lưu
-    loadDashboardStats();
-    setInterval(loadDashboardStats, 15000);
+    showToast('✅ Đã lưu cài đặt!', 'success');
+    startDashboardPolling();
 }
 
 function updateConnectionDisplay() {
-    document.getElementById('connIp').textContent = CONFIG.ip ? `${CONFIG.ip}:${CONFIG.port}` : '---';
     if (CONFIG.ip) {
+        document.getElementById('connIp').textContent = `${CONFIG.ip}:${CONFIG.port}`;
         setStatusConnecting();
+    } else {
+        document.getElementById('connIp').textContent = '---';
+        document.getElementById('statusDot').className = 'status-dot';
+        document.getElementById('statusText').textContent = 'Chưa kết nối';
     }
 }
 
@@ -112,9 +134,24 @@ function setStatusConnecting() {
 }
 
 function openSettings() {
-    document.getElementById('settingsIp').value = CONFIG.ip || '';
-    document.getElementById('settingsPort').value = CONFIG.port || 4000;
-    document.getElementById('settingsToken').value = CONFIG.token || '';
+    // Doc lai tu localStorage de dam bao luon co gia tri moi nhat
+    try {
+        const saved = localStorage.getItem('vps_config');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            document.getElementById('settingsIp').value = parsed.ip || CONFIG.ip || '';
+            document.getElementById('settingsPort').value = parsed.port || CONFIG.port || 4000;
+            document.getElementById('settingsToken').value = parsed.token || CONFIG.token || '';
+        } else {
+            document.getElementById('settingsIp').value = CONFIG.ip || '';
+            document.getElementById('settingsPort').value = CONFIG.port || 4000;
+            document.getElementById('settingsToken').value = CONFIG.token || '';
+        }
+    } catch(e) {
+        document.getElementById('settingsIp').value = CONFIG.ip || '';
+        document.getElementById('settingsPort').value = CONFIG.port || 4000;
+        document.getElementById('settingsToken').value = CONFIG.token || '';
+    }
     document.getElementById('settingsModal').classList.add('open');
 }
 
