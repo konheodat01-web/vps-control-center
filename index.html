@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VPS Control Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">
+                    <span class="logo-title">VPS Control</span>
+                    <span class="logo-sub">Center v1.0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Connection Status -->
+        <div class="connection-card" id="connectionCard">
+            <div class="conn-status">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">Chưa kết nối</span>
+            </div>
+            <div class="conn-ip" id="connIp">---</div>
+        </div>
+
+        <!-- Nav -->
+        <nav class="sidebar-nav">
+            <a class="nav-item active" data-tab="dashboard" onclick="switchTab('dashboard')">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a class="nav-item" data-tab="pm2" onclick="switchTab('pm2')">
+                <span class="nav-icon">🔄</span>
+                <span>PM2 Manager</span>
+            </a>
+            <a class="nav-item" data-tab="logs" onclick="switchTab('logs')">
+                <span class="nav-icon">📋</span>
+                <span>Live Logs</span>
+            </a>
+            <a class="nav-item" data-tab="editor" onclick="switchTab('editor')">
+                <span class="nav-icon">💻</span>
+                <span>Code Editor</span>
+            </a>
+            <a class="nav-item" data-tab="packages" onclick="switchTab('packages')">
+                <span class="nav-icon">📦</span>
+                <span>Packages</span>
+            </a>
+            <a class="nav-item" data-tab="terminal" onclick="switchTab('terminal')">
+                <span class="nav-icon">🖥️</span>
+                <span>Terminal</span>
+            </a>
+        </nav>
+
+        <!-- Settings -->
+        <div class="sidebar-footer">
+            <button class="btn-settings" onclick="openSettings()">⚙️ Cài Đặt Kết Nối</button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- TOP BAR -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="btn-toggle-sidebar" onclick="toggleSidebar()">☰</button>
+                <h1 class="page-title" id="pageTitle">Dashboard</h1>
+            </div>
+            <div class="topbar-right">
+                <div class="current-time" id="currentTime"></div>
+                <button class="btn-refresh" onclick="refreshAll()" title="Làm mới">🔄</button>
+            </div>
+        </header>
+
+        <!-- ===================== TAB: DASHBOARD ===================== -->
+        <section class="tab-content active" id="tab-dashboard">
+            <div class="stats-grid">
+                <div class="stat-card" id="stat-cpu">
+                    <div class="stat-icon">🖥️</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="cpuVal">--</div>
+                        <div class="stat-label">CPU Usage</div>
+                    </div>
+                    <div class="stat-bar"><div class="stat-bar-fill cpu-bar" id="cpuBar"></div></div>
+                </div>
+                <div class="stat-card" id="stat-ram">
+                    <div class="stat-icon">💾</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="ramVal">--</div>
+                        <div class="stat-label">RAM Usage</div>
+                    </div>
+                    <div class="stat-bar"><div class="stat-bar-fill ram-bar" id="ramBar"></div></div>
+                </div>
+                <div class="stat-card" id="stat-disk">
+                    <div class="stat-icon">💿</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="diskVal">--</div>
+                        <div class="stat-label">Disk Usage</div>
+                    </div>
+                    <div class="stat-bar"><div class="stat-bar-fill disk-bar" id="diskBar"></div></div>
+                </div>
+                <div class="stat-card" id="stat-uptime">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="uptimeVal">--</div>
+                        <div class="stat-label">Uptime</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Process List -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>🔄 Tiến Trình PM2</h2>
+                    <button class="btn-sm btn-primary" onclick="switchTab('pm2')">Quản Lý →</button>
+                </div>
+                <div class="table-wrap">
+                    <table class="data-table" id="dashProcessTable">
+                        <thead>
+                            <tr><th>ID</th><th>Tên</th><th>Trạng Thái</th><th>CPU</th><th>RAM</th><th>Restarts</th></tr>
+                        </thead>
+                        <tbody id="dashProcessBody">
+                            <tr><td colspan="6" class="empty-row">⚡ Nhấn "Kết Nối" để xem dữ liệu</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== TAB: PM2 MANAGER ===================== -->
+        <section class="tab-content" id="tab-pm2">
+            <div class="card">
+                <div class="card-header">
+                    <h2>🔄 PM2 Process Manager</h2>
+                    <button class="btn-sm btn-success" onclick="pm2List()">↻ Làm Mới</button>
+                </div>
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>ID</th><th>Tên</th><th>Trạng Thái</th><th>CPU</th><th>RAM</th><th>Restarts</th><th>Hành Động</th></tr>
+                        </thead>
+                        <tbody id="pm2TableBody">
+                            <tr><td colspan="7" class="empty-row">Chưa có dữ liệu</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header"><h2>⚡ Thao Tác Nhanh</h2></div>
+                <div class="action-grid">
+                    <div class="action-item">
+                        <label>Tên tiến trình / ID</label>
+                        <input type="text" id="pm2ProcessName" placeholder="vd: seo-agent" class="input-field">
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-success" onclick="pm2Action('restart')">▶ Restart</button>
+                        <button class="btn btn-warning" onclick="pm2Action('stop')">⏹ Stop</button>
+                        <button class="btn btn-primary" onclick="pm2Action('start')">⚡ Start</button>
+                        <button class="btn btn-danger" onclick="pm2Action('delete')">🗑 Delete</button>
+                    </div>
+                </div>
+                <div class="action-output" id="pm2Output"></div>
+            </div>
+        </section>
+
+        <!-- ===================== TAB: LIVE LOGS ===================== -->
+        <section class="tab-content" id="tab-logs">
+            <div class="card log-card">
+                <div class="card-header">
+                    <h2>📋 Live Log Viewer</h2>
+                    <div class="log-controls">
+                        <input type="text" id="logProcessName" placeholder="Tên tiến trình (vd: seo-agent)" class="input-field input-sm">
+                        <input type="number" id="logLines" placeholder="Số dòng" value="50" class="input-field input-xs">
+                        <button class="btn-sm btn-primary" onclick="fetchLogs()">📥 Tải Log</button>
+                        <button class="btn-sm btn-success" onclick="startLiveLogs()">⚡ Live</button>
+                        <button class="btn-sm btn-danger" onclick="stopLiveLogs()">⏹ Dừng</button>
+                        <button class="btn-sm btn-secondary" onclick="clearLogs()">🗑 Xóa</button>
+                    </div>
+                </div>
+                <div class="log-viewer" id="logViewer">
+                    <div class="log-placeholder">
+                        <span>📋</span>
+                        <p>Nhập tên tiến trình và nhấn "Tải Log" hoặc "Live" để xem log</p>
+                    </div>
+                </div>
+                <div class="log-footer">
+                    <span class="live-badge" id="liveBadge" style="display:none">🔴 LIVE</span>
+                    <span id="logCount">0 dòng</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== TAB: CODE EDITOR ===================== -->
+        <section class="tab-content" id="tab-editor">
+            <div class="card editor-card">
+                <div class="card-header">
+                    <h2>💻 Code Editor</h2>
+                    <div class="editor-controls">
+                        <input type="text" id="editorFilePath" placeholder="Đường dẫn file (vd: /root/seo-scraper/server.js)" class="input-field input-lg">
+                        <button class="btn-sm btn-primary" onclick="loadFile()">📂 Mở File</button>
+                        <button class="btn-sm btn-success" onclick="saveFile()">💾 Lưu File</button>
+                        <button class="btn-sm btn-warning" onclick="saveAndRestart()">🔄 Lưu & Restart</button>
+                    </div>
+                </div>
+                <div class="editor-wrap">
+                    <div class="line-numbers" id="lineNumbers">1</div>
+                    <textarea class="code-editor" id="codeEditor" placeholder="// Nhập đường dẫn file bên trên và nhấn 'Mở File'&#10;// Hoặc tự gõ code vào đây và nhấn 'Lưu File'" spellcheck="false" oninput="updateLineNumbers()"></textarea>
+                </div>
+                <div class="editor-footer">
+                    <span id="editorStatus">Sẵn sàng</span>
+                    <span id="editorLines">Dòng: 1</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== TAB: PACKAGES ===================== -->
+        <section class="tab-content" id="tab-packages">
+            <div class="card">
+                <div class="card-header"><h2>📦 Dependency Manager</h2></div>
+                <div class="pkg-install-form">
+                    <div class="pkg-row">
+                        <input type="text" id="pkgWorkdir" placeholder="Thư mục (vd: /root/seo-scraper)" value="/root/seo-scraper" class="input-field">
+                        <input type="text" id="pkgName" placeholder="Tên thư viện (vd: axios express cors)" class="input-field pkg-input">
+                        <button class="btn btn-primary" onclick="installPackage()">📥 Cài Đặt</button>
+                        <button class="btn btn-secondary" onclick="listPackages()">📋 Xem Danh Sách</button>
+                    </div>
+                </div>
+                <div class="terminal-output" id="pkgOutput">
+                    <span class="terminal-placeholder">Kết quả sẽ hiển thị ở đây...</span>
+                </div>
+            </div>
+
+            <!-- Quick Install -->
+            <div class="card">
+                <div class="card-header"><h2>⚡ Cài Nhanh Thư Viện Phổ Biến</h2></div>
+                <div class="quick-pkg-grid">
+                    <button class="quick-pkg-btn" onclick="quickInstall('axios')">axios</button>
+                    <button class="quick-pkg-btn" onclick="quickInstall('express')">express</button>
+                    <button class="quick-pkg-btn" onclick="quickInstall('cors')">cors</button>
+                    <button class="quick-pkg-btn" onclick="quickInstall('puppeteer')">puppeteer</button>
+                    <button class="quick-pkg-btn" onclick="quickInstall('puppeteer-extra')">puppeteer-extra</button>
+                    <button class="quick-pkg-btn" onclick="quickInstall('puppeteer-extra-plugin-stealth')">stealth-plugin</button>
+                    <button class="quick-pkg-btn" onclick="quickInstall('node-telegram-bot-api')">telegram-bot</button>
+                    <button class="quick-pkg-btn" onclick="quickInstall('cheerio')">cheerio</button>
+                    <button class="quick-pkg-btn" onclick="quickInstall('pm2 -g')">pm2 (global)</button>
+                    <button class="quick-pkg-btn" onclick="quickInstall('dotenv')">dotenv</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== TAB: TERMINAL ===================== -->
+        <section class="tab-content" id="tab-terminal">
+            <div class="card terminal-card">
+                <div class="card-header">
+                    <h2>🖥️ Terminal</h2>
+                    <div class="flex gap-2">
+                        <button class="btn-sm btn-secondary" onclick="clearTerminal()">🗑 Xóa</button>
+                    </div>
+                </div>
+                <div class="terminal-screen" id="terminalScreen">
+                    <div class="terminal-welcome">
+                        <pre>
+  _   __ ____  _____    ______            __              __
+ | | / // __ \/ ___/   / ____/___  ____  / /__________  / /
+ | |/ // /_/ /\__ \   / /   / __ \/ __ \/ __/ ___/ __ \/ / 
+ | | \/ ____/___/ /  / /___/ /_/ / / / / /_/ /  / /_/ / /  
+ |_|\_/_/   /____/   \____/\____/_/ /_/\__/_/   \____/_/   
+                        </pre>
+                        <p>Nhập lệnh Linux bên dưới và nhấn Enter để thực thi.</p>
+                        <p class="warning-text">⚠️ Cảnh báo: Thao tác cẩn thận với các lệnh xóa dữ liệu.</p>
+                    </div>
+                    <div id="terminalOutput"></div>
+                </div>
+                <div class="terminal-input-wrap">
+                    <span class="terminal-prompt">root@vps:~#</span>
+                    <input type="text" id="terminalInput" class="terminal-input" placeholder="Nhập lệnh Linux... (vd: ls -la, pm2 list, df -h)" onkeydown="handleTerminalKey(event)">
+                    <button class="btn-sm btn-primary" onclick="execCommand()">▶ Run</button>
+                </div>
+                <div class="terminal-quick-cmds">
+                    <span class="quick-cmd-label">Lệnh nhanh:</span>
+                    <button class="quick-cmd" onclick="runQuickCmd('pm2 list')">pm2 list</button>
+                    <button class="quick-cmd" onclick="runQuickCmd('pm2 logs seo-agent --lines 20')">pm2 logs</button>
+                    <button class="quick-cmd" onclick="runQuickCmd('df -h')">df -h</button>
+                    <button class="quick-cmd" onclick="runQuickCmd('free -m')">free -m</button>
+                    <button class="quick-cmd" onclick="runQuickCmd('top -bn1 | head -20')">top</button>
+                    <button class="quick-cmd" onclick="runQuickCmd('ls -la /root/seo-scraper/')">ls scraper</button>
+                    <button class="quick-cmd" onclick="runQuickCmd('node --version && npm --version')">versions</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- SETTINGS MODAL -->
+    <div class="modal-overlay" id="settingsModal" onclick="closeSettings(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>⚙️ Cài Đặt Kết Nối VPS</h2>
+                <button class="btn-close" onclick="closeSettingsBtn()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>🌐 Địa chỉ IP VPS</label>
+                    <input type="text" id="settingsIp" placeholder="103.82.195.87" class="input-field">
+                </div>
+                <div class="form-group">
+                    <label>🔌 Cổng Admin API</label>
+                    <input type="number" id="settingsPort" placeholder="4000" value="4000" class="input-field">
+                </div>
+                <div class="form-group">
+                    <label>🔑 Security Token</label>
+                    <input type="password" id="settingsToken" placeholder="Nhập token bảo mật của bạn" class="input-field">
+                    <small>Token này phải khớp với SECRET_ADMIN_TOKEN trong file vps-manager.js</small>
+                </div>
+                <div class="form-group">
+                    <label>✅ Kiểm tra kết nối</label>
+                    <button class="btn btn-primary full-width" onclick="testConnection()">🔗 Test Kết Nối Ngay</button>
+                    <div id="testResult" class="test-result"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeSettingsBtn()">Hủy</button>
+                <button class="btn btn-success" onclick="saveSettings()">💾 Lưu & Kết Nối</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
