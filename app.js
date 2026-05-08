@@ -181,8 +181,13 @@ async function testConnection() {
             signal: AbortSignal.timeout(5000)
         });
         const data = await res.json();
+        if (!res.ok) {
+            result.className = 'test-result error';
+            result.textContent = `❌ Xác thực thất bại (${res.status}): ${data.error || 'Token không hợp lệ'}`;
+            return;
+        }
         result.className = 'test-result success';
-        result.textContent = `✅ Kết nối thành công! VPS phản hồi: "${data.message}"`;
+        result.textContent = `✅ Kết nối thành công! VPS phản hồi: "${data.message || 'OK'}"`;
     } catch (e) {
         result.className = 'test-result error';
         result.textContent = `❌ Kết nối thất bại: ${e.message}`;
