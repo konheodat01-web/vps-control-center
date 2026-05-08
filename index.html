@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VPS Control Center</title>
+    <meta name="description" content="Quan ly VPS tu xa qua giao dien web - VPS Control Center">
+    <meta name="theme-color" content="#0a0e1a">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%234f8ef7'/><stop offset='100%25' stop-color='%237c3aed'/></linearGradient></defs><rect width='100' height='100' rx='20' fill='url(%23g)'/><text y='.9em' font-size='72' x='50%25' text-anchor='middle' dy='0.1em'>⚡</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -74,6 +78,7 @@
             </div>
             <div class="topbar-right">
                 <div class="current-time" id="currentTime"></div>
+                <button class="btn-install" id="installBtn" onclick="installPWA()" title="Thêm vào màn hình chính" style="display:none">📲 Cài đặt App</button>
                 <button class="btn-refresh" onclick="refreshAll()" title="Làm mới">🔄</button>
             </div>
         </header>

@@ -12,12 +12,44 @@ let CONFIG = {
 let liveLogInterval = null;
 let terminalHistory = [];
 let historyIndex = -1;
+let deferredInstallPrompt = null;
+
+// ============ PWA ============
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    const btn = document.getElementById('installBtn');
+    if (btn) btn.style.display = 'block';
+});
+
+window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    const btn = document.getElementById('installBtn');
+    if (btn) btn.style.display = 'none';
+    showToast('✅ Đã cài đặt App thành công!', 'success');
+});
+
+function installPWA() {
+    if (!deferredInstallPrompt) {
+        showToast('Trình duyệt không hỗ trợ hoặc đã cài đặt rồi!', 'info');
+        return;
+    }
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(choice => {
+        if (choice.outcome === 'accepted') showToast('🎉 App đã được cài đặt!', 'success');
+        deferredInstallPrompt = null;
+    });
+}
 
 // ============ INIT ============
 document.addEventListener('DOMContentLoaded', () => {
     loadSettings();
     updateClock();
     setInterval(updateClock, 1000);
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
     if (CONFIG.ip && CONFIG.token) {
         loadDashboardStats();
         setInterval(loadDashboardStats, 15000);
@@ -52,7 +84,9 @@ function saveSettings() {
     updateConnectionDisplay();
     closeSettingsBtn();
     showToast('✅ Đã lưu cài đặt thành công!', 'success');
+    // Load data ngay sau khi lưu
     loadDashboardStats();
+    setInterval(loadDashboardStats, 15000);
 }
 
 function updateConnectionDisplay() {

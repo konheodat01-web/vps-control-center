@@ -231,6 +231,25 @@ body {
 }
 .btn-toggle-sidebar:hover, .btn-refresh:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
 
+.btn-install {
+    background: linear-gradient(135deg, rgba(79, 142, 247, 0.2), rgba(124, 58, 237, 0.2));
+    border: 1px solid rgba(79, 142, 247, 0.4);
+    border-radius: 8px;
+    color: var(--accent);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    transition: all 0.2s;
+    font-family: var(--font-sans);
+    animation: glow 2s infinite;
+}
+.btn-install:hover { background: rgba(79, 142, 247, 0.3); box-shadow: 0 0 16px var(--accent-glow); }
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 4px var(--accent-glow); }
+    50% { box-shadow: 0 0 12px var(--accent-glow); }
+}
+
 /* ============ TAB CONTENT ============ */
 .tab-content {
     display: none;
