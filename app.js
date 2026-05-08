@@ -174,7 +174,7 @@ async function testConnection() {
     result.style.display = 'block';
 
     try {
-        const res = await fetch(`http://${ip}:${port}/ping`, {
+        const res = await fetch(`https://${ip}:${port}/ping`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token }),
@@ -195,7 +195,7 @@ async function callApi(endpoint, body = {}) {
         openSettings();
         throw new Error('Chưa cấu hình IP VPS');
     }
-    const res = await fetch(`http://${CONFIG.ip}:${CONFIG.port}${endpoint}`, {
+    const res = await fetch(`https://${CONFIG.ip}:${CONFIG.port}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: CONFIG.token, ...body }),
